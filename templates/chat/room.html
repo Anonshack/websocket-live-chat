@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ room_name }} — Chat</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="room-page">
+
+    <div class="chat-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">⚡ LiveChat</div>
+            <div class="room-info">
+                <div class="room-label">Xona</div>
+                <div class="room-name"># {{ room_name }}</div>
+            </div>
+            <div class="user-info">
+                <div class="avatar">{{ username|slice:":1"|upper }}</div>
+                <div class="user-name">{{ username }}</div>
+            </div>
+            <a href="/" class="btn-leave">← Chiqish</a>
+        </aside>
+
+        <!-- Main chat area -->
+        <main class="chat-main">
+
+            <div class="chat-header">
+                <div class="header-left">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span class="header-room"># {{ room_name }}</span>
+                </div>
+                <div class="header-right">
+                    <span id="statusText">Ulanmoqda...</span>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messages">
+                <div class="welcome-msg">
+                    <span>⚡</span>
+                    <p><strong>{{ room_name }}</strong> xonasiga xush kelibsiz!</p>
+                    <small>Xabarlar faqat shu sessiyada saqlanadi.</small>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Xabar yozing..."
+                        maxlength="500"
+                        autocomplete="off"
+                    >
+                    <button id="sendBtn" onclick="sendMessage()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const roomName = "{{ room_name }}";
+        const username = "{{ username }}";
+        const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+        const wsUrl = `${wsProtocol}://${window.location.host}/ws/chat/${roomName}/`;
+
+        const messagesDiv = document.getElementById("messages");
+        const input = document.getElementById("messageInput");
+        const statusDot = document.getElementById("statusDot");
+        const statusText = document.getElementById("statusText");
+
+        let socket;
+
+        function connect() {
+            socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => {
+                statusDot.classList.add("online");
+                statusText.textContent = "Ulangan ✓";
+            };
+
+            socket.onclose = () => {
+                statusDot.classList.remove("online");
+                statusText.textContent = "Ulanish uzildi — qayta ulanmoqda...";
+                setTimeout(connect, 3000);
+            };
+
+            socket.onerror = () => {
+                statusText.textContent = "Xato yuz berdi";
+            };
+
+            socket.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+
+                if (data.type === "system") {
+                    addSystemMessage(data.message);
+                } else if (data.type === "message") {
+                    addMessage(data);
+                }
+            };
+        }
+
+        function addMessage(data) {
+            const isMe = data.is_me;
+            const div = document.createElement("div");
+            div.classList.add("message", isMe ? "me" : "other");
+            div.innerHTML = `
+                ${!isMe ? `<div class="msg-avatar">${data.username.charAt(0).toUpperCase()}</div>` : ""}
+                <div class="msg-content">
+                    ${!isMe ? `<div class="msg-username">${escapeHtml(data.username)}</div>` : ""}
+                    <div class="msg-bubble">${escapeHtml(data.message)}</div>
+                    <div class="msg-time">${data.time}</div>
+                </div>
+            `;
+            messagesDiv.appendChild(div);
+            scrollToBottom();
+        }
+
+        function addSystemMessage(text) {
+            const div = document.createElement("div");
+            div.classList.add("system-msg");
+            div.textContent = text;
+            messagesDiv.appendChild(div);
+            scrollToBottom();
+        }
+
+        function sendMessage() {
+            const msg = input.value.trim();
+            if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
+
+            socket.send(JSON.stringify({
+                message: msg,
+                username: username,
+            }));
+            input.value = "";
+        }
+
+        function scrollToBottom() {
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        connect();
+    </script>
+
+</body>
+</html>

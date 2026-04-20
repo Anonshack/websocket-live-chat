@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat — Kirish</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="index-page">
+
+    <div class="index-wrapper">
+        <div class="index-card">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>LiveChat</h1>
+                <p>Real-time WebSocket chat</p>
+            </div>
+
+            {% if error %}
+            <div class="alert">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Ismingiz</label>
+                    <input type="text" name="username" placeholder="Masalan: Ali" maxlength="30" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Xona nomi</label>
+                    <input type="text" name="room" placeholder="Masalan: general" value="general" maxlength="20" required>
+                </div>
+                <button type="submit" class="btn-enter">
+                    Kirish →
+                </button>
+            </form>
+
+            <div class="hint">
+                Bir xil xona nomini kiritgan barcha foydalanuvchilar bir-biri bilan gaplasha oladi.
+            </div>
+        </div>
+
+        <div class="bg-shapes">
+            <div class="shape s1"></div>
+            <div class="shape s2"></div>
+            <div class="shape s3"></div>
+        </div>
+    </div>
+
+</body>
+</html>
