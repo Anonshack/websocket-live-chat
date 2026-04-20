@@ -24,15 +24,15 @@
             {% endif %}
 
             <form method="POST">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label>Ismingiz</label>
-                    <input type="text" name="username" placeholder="Masalan: Kudratbekh" maxlength="30" required autofocus>
-                </div>
-                <button type="submit" class="btn-enter">
-                    Kirish →
-                </button>
-            </form>
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Ismingiz</label>
+                <input type="text" name="username" placeholder="Masalan: Kudratbekh" maxlength="30" required autofocus>
+            </div>
+            <button type="submit" class="btn-enter">
+                Kirish →
+            </button>
+        </form>
 
             <div class="hint">
                 Bir xil xona nomini kiritgan barcha foydalanuvchilar bir-biri bilan gaplasha oladi.

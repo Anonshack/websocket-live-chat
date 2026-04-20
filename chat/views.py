@@ -4,9 +4,10 @@ from django.shortcuts import render, redirect
 def index(request):
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
+        room = request.POST.get('room', 'general').strip()
         if not username:
             return render(request, 'chat/index.html', {'error': 'Ism kiriting!'})
-        return redirect(f'/chat/general/?username={username}')
+        return redirect(f'/chat/{room}/?username={username}')
     return render(request, 'chat/index.html')
 
 
