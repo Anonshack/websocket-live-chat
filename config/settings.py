@@ -93,3 +93,7 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CSRF_TRUSTED_ORIGINS = [
+    'https://websocket-live.up.railway.app',
+    'https://*.up.railway.app',  
+]
